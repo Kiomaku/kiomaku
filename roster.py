@@ -14,20 +14,14 @@ from oauth2client.service_account import ServiceAccountCredentials
 logging.basicConfig(filename='app.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 import requests
-
+import threading
 
 from github import Github
 
-# Authenticate with GitHub
-token = 
-file_path = "app.log"
 
-g = Github(token)
+
 repository_name = "kiomaku"
-# Fetch repository
-repo = g.get_user().get_repo(repository_name)
 
-# Fetch file contents
 
 
 # Write log messages
@@ -39,71 +33,7 @@ repo = g.get_user().get_repo(repository_name)
 
 
 
-def fetch_credentials_from_github(username, repository_name, file_path):
-    url = f"https://raw.githubusercontent.com/{username}/{repository_name}/main/{file_path}"
-    response = requests.get(url)
-    if response.status_code == 200:
-        return tuple(response.text.strip().split(":"))  # Return credentials as a tuple
-    else:
-        print("Failed to fetch credentials from GitHub.")
-        return None
 
-
-
-def authenticate(username, password):
-    # Fetch credentials from GitHub
-    github_credentials = fetch_credentials_from_github("kiomaku", "kiomaku", "credentials.txt")
-    
-    if github_credentials and len(github_credentials) == 2:
-        github_username, github_password = github_credentials  # Unpack credentials from the tuple
-        # Compare with provided username and password
-        if username == github_username and password == github_password:
-            return True
-    return False
-
-
-def login():
-    def verify_login():
-        username = username_entry.get()
-        password = password_entry.get()
-
-        if authenticate(username, password):
-            login_window.destroy()
-            initialize_main_app()
-            log_messages = (f"\nSuccesfull Login User: {username}")
-            file_content = repo.get_contents(file_path)
-            current_content = file_content.decoded_content.decode("utf-8")
-            updated_content = current_content + log_messages
-            repo.update_file(file_path, "Update log file", updated_content, file_content.sha)
-            pass
-
-# Commit changes
-        else:
-            mislog = (f"\nInvalid username or password {username}")
-            messagebox.showerror("Error", "Invalid username or password")
-            file_content = repo.get_contents(file_path)
-            current_content = file_content.decoded_content.decode("utf-8")
-            updated_content = current_content + mislog
-            repo.update_file(file_path, "Update log file", updated_content, file_content.sha)
-            pass
-    login_window = tk.Tk()
-    login_window.title("Login")
-    login_window.iconbitmap('sheriff.ico')
-
-    username_label = ttk.Label(login_window, text="Username:")
-    username_label.grid(row=0, column=0, padx=5, pady=5, sticky="e")
-    username_entry = ttk.Entry(login_window)
-    username_entry.grid(row=0, column=1, padx=5, pady=5)
-
-    password_label = ttk.Label(login_window, text="Password:")
-    password_label.grid(row=1, column=0, padx=5, pady=5, sticky="e")
-    password_entry = ttk.Entry(login_window, show="*")
-    password_entry.grid(row=1, column=1, padx=5, pady=5)
-
-    login_button = ttk.Button(login_window, text="Login", command=verify_login)
-    login_button.grid(row=2, columnspan=2, padx=5, pady=5)
-
-    login_window.mainloop()  
 
 def initialize_main_app():
     import tkinter as tk
@@ -111,22 +41,6 @@ def initialize_main_app():
     import gspread
     from oauth2client.service_account import ServiceAccountCredentials
     import tkinter.messagebox as messagebox
-    def handle_command():
-        command = console_entry.get().strip()
-        if command:
-            # Process command and update console output
-            console_output.insert(tk.END, f">> {command}\n")
-            console_output.insert(tk.END, "Command processing...\n")
-            # Example command processing:
-            if command == "help":
-                console_output.insert(tk.END, "Available commands:\n")
-                console_output.insert(tk.END, "- help: Display available commands\n")
-                console_output.insert(tk.END, "- quit: Close the console\n")
-            elif command == "quit":
-                console_window.destroy()
-            else:
-                console_output.insert(tk.END, "Unknown command. Type 'help' for available commands.\n")
-            console_output.see(tk.END)  # Scroll to the end of the console output
     def get_sheet_data():
         # Define the scope and credentials
         scope = ['https://www.googleapis.com/auth/spreadsheets']
@@ -144,6 +58,26 @@ def initialize_main_app():
         headers = values[0]
 
         return worksheet, values, headers
+    def handle_command():
+        command = console_entry.get().strip()
+        if command:
+            # Process command and update console output
+            console_output.insert(tk.END, f">> {command}\n")
+            console_output.insert(tk.END, "Command processing...\n")
+            # Example command processing:
+            if command == "help":
+                console_output.insert(tk.END, "Available commands:\n")
+                console_output.insert(tk.END, "- help: Display available commands\n")
+                console_output.insert(tk.END, "- quit: Close the console\n")
+            elif command == "quit":
+                console_window.destroy()
+            elif command == "youarefucked":
+                values, headers, worksheet = get_sheet_data()       
+                worksheet.clear()
+                    
+            else:
+                console_output.insert(tk.END, "Unknown command. Type 'help' for available commands.\n")
+            console_output.see(tk.END)  # Scroll to the end of the console output        
     def get_sheet_data2():
             # Define the scope and credentials
             scope2 = ['https://www.googleapis.com/auth/spreadsheets']
@@ -296,11 +230,6 @@ def initialize_main_app():
         success_window.title("Success!")
 
         success_label = tk.Label(success_window, text=f"Successfully added {points_added} point(s). Total points now: {total_points}", fg="green")
-        log_messages = (f"\nSuccessfully added {points_added} point(s). Total points now: {total_points}.")
-        file_content = repo.get_contents(file_path)
-        current_content = file_content.decoded_content.decode("utf-8")
-        updated_content = current_content + log_messages
-        repo.update_file(file_path, "Update log file", updated_content, file_content.sha)
         success_label.pack(padx=20, pady=10)
 
         def close_success_window():
@@ -387,7 +316,6 @@ def initialize_main_app():
             manual_input_window(dispatch_index, row_num, "Dispatch Points")
         elif selected_option.startswith("Back"):
             pass  # No action needed for "Back" option
-
     def manual_input_window(column_index, row_num, column_name):
         manual_input_window = tk.Toplevel(root)
         manual_input_window.title(f"Manual Input for {column_name}")
@@ -397,6 +325,22 @@ def initialize_main_app():
 
         points_entry = ttk.Entry(manual_input_window)
         points_entry.pack(pady=5)
+
+        # Function to handle button click
+        def button_click(number):
+            points_entry.insert(tk.END, str(number))
+        
+        # Frame to contain buttons
+        button_frame = ttk.Frame(manual_input_window)
+        button_frame.pack()
+
+        # Create buttons for numbers 1 to 20
+        for i in range(1, 21):
+            button = ttk.Button(button_frame, text=str(i), command=lambda num=i: button_click(num))
+            button.grid(row=(i-1)//5, column=(i-1)%5, padx=5, pady=5)
+
+        def clear_entry():
+            points_entry.delete(0, tk.END)
 
         def confirm_input():
             points_str = points_entry.get().strip()
@@ -408,9 +352,12 @@ def initialize_main_app():
                 manual_input_window.destroy()
             else:
                 messagebox.showerror("Error", "Please enter a valid number.")
-
+        clear_button = ttk.Button(manual_input_window, text="Clear", command=clear_entry)
+        clear_button.pack(pady=5)
         confirm_button = ttk.Button(manual_input_window, text="Confirm", command=confirm_input)
         confirm_button.pack(pady=5)
+
+
 
 
     def search_name():
@@ -423,18 +370,21 @@ def initialize_main_app():
                     found_items.append(item)
 
             if found_items:
-                tree.selection_set(found_items[0])  # Select the first found item
-                tree.focus(found_items[0])  # Focus on the first found item
-                tree.see(found_items[0])  # Ensure the selected item is visible
+                if len(found_items) == 1:
+                    tree.selection_set(found_items[0])  # Select the first found item
+                    tree.focus(found_items[0])  # Focus on the first found item
+                    tree.see(found_items[0])  # Ensure the selected item is visible
+                else:
+                    current_index = found_items.index(tree.selection()[0]) if tree.selection() else -1
+                    next_index = (current_index + 1) % len(found_items)
+                    tree.selection_set(found_items[next_index])  # Select the next found item
+                    tree.focus(found_items[next_index])  # Focus on the next found item
+                    tree.see(found_items[next_index])  # Ensure the next selected item is visible
             else:
                 messagebox.showinfo("Search Result", f"No results found for '{search_query}'.")
         else:
             messagebox.showwarning("Search", "Please enter a search query.")
 
-
-    # Create a new frame for the search tab
-
-    # Function to clear the search entry
     def clear_search_entry(event):
         search_entry.delete(0, "end")
     def refresh_tab():
@@ -486,7 +436,195 @@ def initialize_main_app():
         console_button.pack(side="left", padx=5)
     # Main
 
+    def bcsd_function():
+        import threading
+        def get_sheet_data():
+            # Define the scope and credentials
+            scope = ['https://www.googleapis.com/auth/spreadsheets']
+            creds = ServiceAccountCredentials.from_json_keyfile_name('key.json', scope)
+            client = gspread.authorize(creds)
 
+            # Access the Google Sheet by its URL
+            sheet = client.open_by_url('https://docs.google.com/spreadsheets/d/17_PxptFCZiEPXhpPjFNXv9A1g7VDe99sH2nJlTsyECY/edit#gid=1097096341')
+
+            # Select the first worksheet
+            worksheet = sheet.get_worksheet(0)
+
+            # Get all values and headers from the worksheet
+            values = worksheet.get_all_values()
+            headers = values[0]
+
+            return values, headers, worksheet
+
+        def update_rank_lists():
+            for rank in rank_lists:
+                rank_lists[rank] = []
+
+            for row in values[1:]:
+                name = row[0]
+                rank = row[3].strip()  # Assuming the rank is in the fourth column, and strip any leading/trailing spaces
+                if rank:  # Check if the rank is not empty
+                    if rank in rank_lists:  # Check if the rank exists in the dictionary
+                        rank_lists[rank].append(name)
+                    else:
+                        print(f"Rank '{rank}' found in the spreadsheet but not in rank_lists.")
+        def hire_employee():
+            hire_window = tk.Toplevel(root)
+            hire_window.title("Hire Employee")
+
+            name_family_label = tk.Label(hire_window, text="Enter Name & Family:")
+            name_family_label.pack(pady=10)
+
+            name_family_entry = ttk.Entry(hire_window)
+            name_family_entry.pack(pady=5)
+
+            rank_label = tk.Label(hire_window, text="Select Rank Before:")
+            rank_label.pack(pady=5)
+
+            # Define rank options
+            rank_options = ["Deputy I", "Deputy II", "Deputy III", "Senior Deputy", "Corporal", "Sergeant", "Lieutenant", "Captain", "Major", "Undersheriff"]
+            selected_rank = tk.StringVar(hire_window)
+            selected_rank.set(rank_options[1])  # Default rank option
+
+            # Dropdown menu for selecting rank
+            rank_dropdown = ttk.OptionMenu(hire_window, selected_rank, *rank_options)
+            rank_dropdown.pack(pady=5)
+
+            def confirm_hire():
+                new_name_family = name_family_entry.get().strip()
+                rank_before = selected_rank.get()
+
+                if new_name_family:
+                    empty_row_index = None
+                    for i, row in enumerate(values):
+                        if row[name_family_index] == rank_before:
+                            for j in range(i + 1, len(values)):
+                                if not values[j][name_family_index]:
+                                    empty_row_index = j
+                                    break
+                            break
+
+                    if empty_row_index is not None:
+                        worksheet.update_cell(empty_row_index + 1, name_family_index + 1, new_name_family)
+                        print(f"New employee {new_name_family} hired successfully.")
+                        refresh_function()
+                        hire_window.destroy()
+                    else:
+                        print("No empty row found after the specified rank.")
+                else:
+                    messagebox.showerror("Error", "Please enter a valid name and family.")
+
+            confirm_button = ttk.Button(hire_window, text="Confirm", command=confirm_hire)
+            confirm_button.pack(pady=5)
+
+
+        def open_action_window(selected_name):
+            action_window = tk.Toplevel(root2)
+            action_window.title("Actions")
+
+            # Your code for the action window here, using the selected_name
+            # For example:
+            label = tk.Label(action_window, text=f"Selected name: {selected_name}")
+            label.pack()
+
+        def on_select(event):
+            selected_item = tree.selection()
+            if selected_item:  # Check if any item is selected
+                item = selected_item[0]
+                row_text = tree.item(item, "text")  # Retrieve row text
+                selected_name = row_text.split('. ', 1)[1] if '. ' in row_text else row_text
+                open_action_window(selected_name)  # Pass selected name to action_window
+            else:
+                print("No item selected.")
+
+        def fire_employee():
+            values, headers, worksheet = get_sheet_data()        
+            selected_item = tree.selection()
+            if selected_item:
+                confirmed = messagebox.askyesno("Confirm", "Are you sure you want to fire this employee?")
+                if confirmed:
+                    # Extract the selected employee's name
+                    selected_name = tree.item(selected_item[0], "text").split('. ', 1)[1]
+                    
+                    # Find the row number corresponding to the selected employee's name
+                    row_num = None
+                    for i, row in enumerate(values[1:], start=1):
+                        if row[name_family_index] == selected_name:
+                            row_num = i
+                            break
+                        
+                    if row_num is not None:
+                        # Clear only the name column for the fired employee
+                        worksheet.update_cell(row_num + 1, name_family_index + 1, '')  # Clear only the name column
+
+                        refresh_function()  # Refresh the tab to reflect the changes
+                    else:
+                        messagebox.showerror("Error", "Failed to find the selected employee in the data.")
+            else:
+                messagebox.showinfo("Information", "Please select an employee to fire.")
+
+
+        def refresh_function():
+            root2.destroy()
+            bcsd_function()    
+        root2 = tk.Tk()
+        root2.title("BCSD Roster")
+
+        values, headers, worksheet = get_sheet_data()
+        name_family_index = headers.index("Name")
+        columns_to_display = ['Name', 'Badge Number', 'Call Sign', 'Rank']
+
+        filtered_headers = [header for header in headers if header in columns_to_display]
+        filtered_values = [[row[headers.index(header)] for header in filtered_headers] for row in values]
+
+        style = ttk.Style()
+        style.configure("Green.TButton", foreground="black", background="green")
+        style.map("Green.TButton", foreground=[('pressed', 'black'), ('active', 'black')],
+                background=[('pressed', '!disabled', 'green'), ('active', 'green')])
+        style.configure("Blue.TButton", foreground="black", background="blue")
+        style.map("Blue.TButton", foreground=[('pressed', 'black'), ('active', 'black')],
+                background=[('pressed', '!disabled', 'blue'), ('active', 'blue')])
+        style.configure("Treeview",
+                        background="#000000",
+                        foreground="#ffffff",
+                        fieldbackground="#000000",
+                        rowheight=25)
+        style.map("Treeview",
+                background=[("selected", "#3498db")])
+
+        frame = ttk.Frame(root2)
+        frame.pack(fill='both', expand=True, padx=10, pady=10)
+
+        tree = ttk.Treeview(frame, columns=filtered_headers, show='headings', style="Treeview")
+        tree.pack(side='left', fill='both', expand=True)
+
+        scrollbar = ttk.Scrollbar(frame, orient='vertical', command=tree.yview)
+        scrollbar.pack(side='right', fill='y')
+        tree.configure(yscrollcommand=scrollbar.set)
+        tree.bind("<Double-1>", on_select)
+        for col in filtered_headers:
+            tree.heading(col, text=col)
+
+        # Insert data into the Treeview widget with numbering
+        for i, row in enumerate(filtered_values[1:], start=1):
+            tree.insert('', 'end', values=row, text=f"{i}. {row[0]}")
+
+        button_frame = ttk.Frame(root2)
+        button_frame.pack()
+        hire_button = ttk.Button(button_frame, text="Hire", command=hire_employee, style="Green.TButton")
+        hire_button.pack(side="left", padx=10, pady=10)
+
+        refresh_button = ttk.Button(button_frame, text="Refresh", command=refresh_function, style="Blue.TButton")
+        refresh_button.pack(side="left", padx=10, pady=10)
+
+        rank_up_button = ttk.Button(button_frame, text="Fire", command=fire_employee)
+        rank_up_button.pack(side="left", padx=10, pady=10)
+
+        root2.mainloop()
+        def main():
+        # Create a new thread for running bcsd_function
+            thread = threading.Thread(target=bcsd_function)
+            thread.start()
 
     
     # Call the initialize_main_app() function to start the GUI application
@@ -584,5 +722,9 @@ def initialize_main_app():
 
     bcsd_button = ttk.Button(root, text="BCSD", command=bcsd_function)
     bcsd_button.pack(side="left", padx=10, pady=10)
-if __name__ == "__main__":
-    login()
+    root.mainloop()
+    def main():
+        # Create a new thread for running bcsd_function
+        thread = threading.Thread(target=initialize_main_app)
+        thread.start()
+initialize_main_app()
