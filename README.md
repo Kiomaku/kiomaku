@@ -1,5 +1,5 @@
 # 💫 About Me:
-⚡Im currently working on java and some phishing scripts <br>💞I like to create scripts and minecraft plugins<br>🌬️Rust, fiveM,minecraft,terraria, and allot more games ive been developing plugins/mods/servers on them for a while now<br><br>🤷🏼You can easily find me on discord hanging around in my own minecraft server<br><br>🥰The languages ive had work with is allot but ill mention some important of them<br>🩸Have a good life!.
+⚡Im currently working side to side development, web, fullstack <br>💞I like to create scripts and minecraft plugins<br>🌬️Rust, fiveM,minecraft,terraria, and allot more games ive been developing plugins/mods/servers on them for a while now<br><br>🤷🏼You can easily find me on discord hanging around in my own minecraft server<br><br>🥰The languages ive had work with is allot but ill mention some important of them<br>🩸Have a good life!.
 
 
 ## 🌐 Socials:
