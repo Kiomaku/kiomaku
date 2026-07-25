@@ -17,7 +17,7 @@
 
 ## About
 
-Full-stack developer with 5+ years of experience, focused on building complete, production-ready products rather than isolated demos — interface design, backend architecture, and the infrastructure that ships and runs it. Alongside client and personal web products, I develop scripts, plugins, and server tooling for game platforms (Minecraft, FiveM, Terraria).
+Full-stack developer with 5+ years of experience, focused on building complete, production-ready products rather than isolated demos, interface design, backend architecture, and the infrastructure that ships and runs it. Alongside client and personal web products, I develop scripts, plugins, and server tooling for game platforms (Minecraft, FiveM, Terraria).
 
 **Currently building:** web platforms with Next.js/TypeScript front ends and Go/Java/Kotlin/Python backends, plus networking and media-streaming infrastructure on self-managed Linux servers.
 
